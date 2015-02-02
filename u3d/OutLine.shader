@@ -1,14 +1,11 @@
-﻿Shader "Custom/NewShader" {
+﻿Shader "Custom/OutLine" {
 
     Properties {
     
         _MainTex("_MainTex", 2D) = "white" {}
-        _Outline ("Outline Length", Range(0.0, 1.0)) = 0.3
-    
         _Color ("Color", Color) = (0.8, 0.8, 0.8, 1.0)
+        _OutlineWidth ("Outline Length", Range(0.0, 1.0)) = 0.3
         _OutlineColor ("Outline Color", Color) = (0.2, 0.2, 0.2, 1.0)
-        _ShadowColor ("_ShadowColor", Color) = (0, 0, 0, 0)
-
     }
     
     SubShader {
@@ -19,6 +16,7 @@
         }
     
         LOD 200        
+                
        
         Pass {
             Stencil { 
@@ -27,16 +25,18 @@
               Pass REPLACE 
             }
             
-            AlphaTest Greater 0
+            Cull off
+                        
+            AlphaTest Greater 0.5
             Blend SrcAlpha OneMinusSrcAlpha 
+            
             Color[_Color]
             SetTexture[_MainTex] {
                 Combine texture
             }
         }
         
-        // render outline
-        
+                
         Pass {
         
             Stencil {
@@ -49,7 +49,7 @@
             Cull Off
             ZWrite Off
             
-            AlphaTest Greater 0.9
+            AlphaTest Greater 0.5
             Blend SrcAlpha OneMinusSrcAlpha 
         
             CGPROGRAM
@@ -58,15 +58,11 @@
             #pragma fragment frag
             #include "UnityCG.cginc"
             
-            float _Outline;
+            float _OutlineWidth;
             float4 _OutlineColor;
-            
-                        
-            float4 offset = float4(10,2,2,0);
-            
+
             uniform float4 _MainTex_ST;
-            
-            
+
             struct appdata {
                 float4 vertex : POSITION;
                 float3 normal : NORMAL;
@@ -81,14 +77,10 @@
             
             v2f vert(appdata v) {
                 v2f o;
-                
                 float4 vert = v.vertex;
-                vert.xyz += v.normal * _Outline;
-                //vert.xyz *= (1 + _Outline);
-
+                vert.xyz += v.normal * _OutlineWidth;
+                //vert.xyz *= (1 + _OutlineWidth);
                 o.pos = mul(UNITY_MATRIX_MVP, vert);
-                
-                
                 o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
                 return o;
             }
@@ -98,68 +90,13 @@
             
             half4 frag(v2f i) : COLOR {
                 float4 texcol = tex2D(_MainTex, i.uv);
-                if(texcol.a > 0 ){
+                if(texcol.a > 0.5 ){
                     return _OutlineColor;
                 }
                 return float4(0,0,0,0);
-                
-                //return _OutlineColor;
             }   
-            
             ENDCG
         }
-        
-         Pass {
-        
-            Stencil {
-                Ref 1
-                Comp NotEqual
-               
-            }
-            
-            //Cull Off
-            //ZWrite Off
-            
-            //Blend SrcAlpha OneMinusSrcAlpha 
-        
-            CGPROGRAM
-            
-            #pragma vertex vert
-            #pragma fragment frag
-            
-            float4 _ShadowColor;
-           
-            struct appdata {
-                float4 vertex : POSITION;
-                float3 normal : NORMAL;
-            };
-            
-            struct v2f {
-                float4 pos : SV_POSITION;
-            };
-            
-            v2f vert(appdata v) {
-                v2f o;
-       
-                float4 vert = v.vertex;
-                vert.z *= v.normal * 0;
-                o.pos = mul(UNITY_MATRIX_MVP, vert);    
-                
-                o.pos.xyz += float3(0,-1.5,0);
-                
-                return o;
-            }
-            
-            uniform sampler2D _MainTex;
-            uniform float4 _Color;
-            
-            half4 frag(v2f i) : COLOR {
-                return _ShadowColor;
-            }   
-            
-            ENDCG
-        }
-
     } 
     
     FallBack "Diffuse"

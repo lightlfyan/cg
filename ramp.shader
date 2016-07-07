@@ -65,7 +65,7 @@ Shader "Custom/ramp"
 			float3 lightDir=normalize(i.lightDir);
 
 			float dotProduct = 1 - dot(N, viewDir);
-			float4 rimcolor = _RimColor * smoothstep(1 - _RimWidth, 1.0, dotProduct);
+			float4 rimcolor = _RimColor * smoothstep(1 - _RimWidth, 1.0, dotProduct);r
 
 	
 			float diff= max(0,dot(N,i.lightDir));

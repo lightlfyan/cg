@@ -2,19 +2,25 @@
 Shader "Custom/ColorBall" {
    Properties {
    	  _MainTex ("Albedo (RGB)", 2D) = "white" {}
+   	  _Color("Color", Color) = (1,1,1,1)
 	  _EmotionTex ("EmotionTex", 2D) = "white" {}
 	  _BumpMap("BumpMap",2D)="white"{}
 	  _BumpDepth ("Bump Depth", Range( -2.0, 2.0 )) = 1
 
 	  _lerp("_lerp", Range(0, 1)) = 0
 	  ka("ka", Range(0, 1)) = 0
-//	  ke("ke", Range(0, 10)) = 0
 	  kd("kd", Range(0, 2)) = 0
 	  ks("ks", Range(0, 1)) = 0
+
+	  _Alpha("_Alpha", Range(0, 1)) = 1
 
       _Color ("Diffuse Material Color", Color) = (1,1,1,1) 
       _SpecColor ("Specular Material Color", Color) = (1,1,1,1) 
       _Shininess ("Shininess", Float) = 10
+
+      _RimColor("RimColor", Color) = (1,1,1,1)
+	  _RimWidth("_RimWidth", range(0, 1)) = 0.5
+	  _RimPower("_RimPower", float) = 1
    }
    SubShader {
       Pass {    
@@ -41,12 +47,16 @@ Shader "Custom/ColorBall" {
 		 sampler2D _EmotionTex;
 		 float _lerp;
 		 float ka;
-		 float ke;
 		 float kd;
 		 float ks;
 		 float _BumpDepth;
+		 float _Alpha;
 
 		 sampler2D _BumpMap;
+
+		 uniform float4 _RimColor;
+			uniform float _RimWidth;
+			uniform float _RimPower;
  
          struct vertexInput {
             float4 vertex : POSITION;
@@ -86,12 +96,6 @@ Shader "Custom/ColorBall" {
 
             return output;
          }
-
-         float3  expand(float3 v)
-		 {
-  			return (v - 0.5) * 2; // Expand a range-compressed vector
-		 }
-
  
          float4 frag(vertexOutput input) : COLOR
          {
@@ -112,7 +116,6 @@ Shader "Custom/ColorBall" {
 			);
 			// Calculate Normal Direction
 			float3 normalDirection = normalize( mul( localCoords, local2WorldTranspose ) );
-
          	//float3 normalDirection = expand(tex2D(_BumpMap, input.uv));
             //float3 normalDirection = normalize(input.normalDir);
  
@@ -147,11 +150,16 @@ Shader "Custom/ColorBall" {
             }
 
 
-            col.rgb *=  (ka * ambientLighting + kd * diffuseReflection +  ks * specularReflection);
+            float dotProduct = 1 - saturate(dot(normalDirection, viewDirection));
+			float4 rimcolor = _RimColor * smoothstep(1 - _RimWidth, 1.0, dotProduct);
 
+           col.rgb *=  (_Color +  ka * ambientLighting + kd * diffuseReflection +  ks * specularReflection);
+
+           col += rimcolor;
            // col.rgb *= (col.rgb * ke + diffuseReflection + specularReflection);
-           clip(col.a - 0.5);
-            return col;
+           col.a = _Alpha;
+           //clip(col.a - 0.5);
+           return col;
          }
  
          ENDCG
@@ -233,12 +241,6 @@ Shader "Custom/ColorBall" {
 
             return output;
          }
-
-         float3  expand(float3 v)
-		 {
-  			return (v - 0.5) * 2; // Expand a range-compressed vector
-		 }
-
  
          float4 frag(vertexOutput input) : COLOR
          {
@@ -323,6 +325,7 @@ Shader "Custom/ColorBall" {
  
          ENDCG
       }
+
    }
    Fallback "Specular"
 }

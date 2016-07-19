@@ -2,8 +2,9 @@ Shader "Custom/BloomTexture" {
 Properties {
     _Color ("Main Color", Color) = (1,1,1,1)
 }
-SubShader { //this subShader is same with "Unlit/Color" shader, except the RenderType change to "GroupBloom"
-    Tags { "RenderType"="GroupBloom" }
+
+SubShader { 
+    Tags { "RenderType"="Bloom" }
     LOD 100
     Pass {  
         CGPROGRAM
@@ -42,6 +43,7 @@ SubShader { //this subShader is same with "Unlit/Color" shader, except the Rende
         ENDCG
     }
 }
+
 SubShader { //because this subShader renders pure black, so we need not support fog
     Tags { "RenderType"="Opaque" }
     LOD 100
@@ -78,4 +80,6 @@ SubShader { //because this subShader renders pure black, so we need not support 
         ENDCG
     }
 }
+
+
 }

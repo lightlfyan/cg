@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 908e22a0290e0499ca5db3f8225ceada
+timeCreated: 1469501021
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - outlineShader: {fileID: 4800000, guid: 2ad97052aa5b24a5585ebd46edbc5627, type: 3}
+  - silhouetteShader: {fileID: 4800000, guid: da36db828263542fe8075d278fbdc0f3, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
